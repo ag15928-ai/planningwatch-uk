@@ -1,0 +1,43 @@
+name: Refresh official renewable project data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * 1"
+  push:
+    paths:
+      - ".github/workflows/renewables.yml"
+      - "scripts/update_renewables.py"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-renewables
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install coordinate conversion library
+        run: python -m pip install pyproj
+      - name: Download and convert latest DESNZ snapshot
+        run: python scripts/update_renewables.py
+      - name: Commit data only when the source has changed
+        run: |
+          if [ -z "$(git status --porcelain -- data/renewables.json)" ]; then
+            echo "The official REPD snapshot has not changed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/renewables.json
+          git commit -m "Refresh DESNZ renewable project data"
+          git push
