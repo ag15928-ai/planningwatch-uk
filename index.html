@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#163d2c">
+  <meta name="description" content="PlanningWatch UK — the community planning intelligence companion to Holding the Green Line.">
+  <title>PlanningWatch UK | Holding the Green Line</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root{--forest:#163d2c;--forest2:#205b3f;--lime:#d7ed71;--ink:#19251f;--muted:#64736a;--line:#dce5dd;--paper:#f4f7f2;--white:#fff;--amber:#ffe9a6;--blue:#dcecff;--radius:16px}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .shell{min-height:100vh;display:grid;grid-template-columns:250px minmax(0,1fr)}
+    aside.sidebar{background:var(--forest);color:#f5faef;padding:24px 16px;display:flex;flex-direction:column;gap:25px}
+    .brand{display:flex;align-items:center;gap:11px;padding:4px 8px 16px}
+    .brand-mark{width:42px;height:42px;border-radius:13px;background:var(--lime);color:var(--forest);display:grid;place-items:center;font-weight:900;font-size:17px;letter-spacing:-1px}
+    .brand strong{display:block;font-size:17px;line-height:1.1}
+    .brand span{font-size:11px;color:#bed1c3;display:block;margin-top:5px}
+    .nav-label{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:#a8bfb0;padding:0 10px 7px}
+    .nav{display:grid;gap:5px}
+    .nav button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:0;background:transparent;color:#dbe9de;padding:11px 12px;border-radius:10px;font-weight:600}
+    .nav button:hover,.nav button.active{background:#2b6448;color:#fff}
+    .nav .icon{width:22px;text-align:center;font-size:17px}
+    .side-note{margin-top:auto;border-top:1px solid #ffffff2a;padding:15px 8px 0;color:#c4d5c9;font-size:12px}
+    .side-note b{color:#fff;display:block;font-size:13px;margin-bottom:5px}
+    main{min-width:0;padding:22px 26px 40px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:20px}
+    .eyebrow{color:var(--forest2);text-transform:uppercase;font-size:11px;font-weight:800;letter-spacing:.11em}
+    h1{font-size:clamp(24px,3vw,34px);line-height:1.1;margin:3px 0 0;letter-spacing:-.035em}
+    .top-actions{display:flex;align-items:center;gap:10px}
+    .pill{padding:8px 12px;border:1px solid var(--line);border-radius:99px;background:#fff;color:#395145;font-weight:650;font-size:12px}
+    .pill strong{color:var(--forest)}
+    .btn{border:0;border-radius:10px;background:var(--forest);color:white;padding:11px 15px;font-weight:750}
+    .btn:hover{background:var(--forest2)}
+    .btn.secondary{background:#e8efe8;color:var(--forest);border:1px solid var(--line)}
+    .btn.secondary:hover{background:#dce9dc}
+    .btn.ghost{background:transparent;color:var(--forest);border:1px solid var(--line)}
+    .view{display:none}
+    .view.active{display:block}
+    .notice{border:1px solid #e3d49a;background:#fff9e8;padding:10px 13px;border-radius:12px;font-size:12px;color:#624e16;margin:0 0 14px}
+    .map-layout{display:grid;grid-template-columns:minmax(300px,365px) minmax(0,1fr);min-height:calc(100vh - 155px);background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:0 8px 28px #1836220b}
+    .controls{padding:18px;border-right:1px solid var(--line);overflow:auto;max-height:calc(100vh - 155px)}
+    .controls h2{font-size:17px;margin:0 0 4px}
+    .muted{color:var(--muted)}
+    .tiny{font-size:12px;color:var(--muted)}
+    .field{display:grid;gap:6px;margin:12px 0}
+    label{font-size:12px;font-weight:750;color:#3c5045}
+    input,select,textarea{width:100%;border:1px solid #cfdad1;background:#fff;border-radius:9px;padding:10px 11px;color:var(--ink)}
+    textarea{min-height:90px;resize:vertical}
+    input:focus,select:focus,textarea:focus{outline:3px solid #d7ed7166;border-color:#658d5f}
+    .row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
+    .row .field{margin-bottom:0}
+    .row .btn{min-height:42px}
+    .filters{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0 10px}
+    .filter{border:1px solid var(--line);background:white;color:#355044;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:700}
+    .filter.active{background:var(--forest);border-color:var(--forest);color:#fff}
+    .record-list{display:grid;gap:9px}
+    .record{border:1px solid var(--line);padding:12px;border-radius:12px;background:#fff;cursor:pointer}
+    .record:hover{border-color:#81a18a;box-shadow:0 3px 12px #163d2c10}
+    .record-title{font-weight:760;font-size:14px;margin-bottom:4px}
+    .record-meta{font-size:12px;color:var(--muted);line-height:1.45}
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;background:#eef3ee;color:#345642;border-radius:999px;font-size:10px;font-weight:800;margin:2px 4px 5px 0}
+    .badge.demo{background:var(--amber);color:#654d0b}
+    .badge.pending{background:#fff0c9;color:#735600}
+    .badge.approved{background:#e0f1e5;color:#26583a}
+    .badge.construction{background:var(--blue);color:#234b76}
+    .map-stage{position:relative;min-height:560px;background:#e6ede6}
+    #mapCanvas{height:100%;min-height:560px;z-index:1}
+    .map-badge{position:absolute;right:14px;top:14px;z-index:500;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:11px;color:#526258;box-shadow:0 2px 10px #00000012}
+    .map-legend{position:absolute;right:14px;bottom:14px;z-index:500;display:grid;gap:6px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-size:11px;box-shadow:0 2px 10px #00000012}
+    .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+    .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin-bottom:17px}
+    .section-head h2{font-size:24px;letter-spacing:-.025em;margin:0}
+    .section-head p{margin:5px 0 0;color:var(--muted);max-width:720px}
+    .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin:14px 0}
+    .panel h3{font-size:17px;margin:0 0 7px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+    .check{display:flex;gap:9px;align-items:flex-start;background:#f6f8f5;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:13px}
+    .check input{width:auto;margin:2px 0 0;accent-color:var(--forest)}
+    .check span{font-weight:650}
+    .callout{background:#eef4eb;border-left:4px solid #548357;padding:12px 14px;border-radius:0 10px 10px 0;font-size:13px;color:#314b38;margin:12px 0}
+    .status-box{padding:12px 14px;border-radius:11px;background:#f4f6f3;color:#4f6054;font-size:13px}
+    .upload-box{border:2px dashed #a8bca9;border-radius:14px;padding:24px;text-align:center;background:#f8faf7}
+    .upload-box input{max-width:440px;margin-top:12px}
+    .file-list{font-size:13px;margin-top:12px;display:grid;gap:6px}
+    .update-item{border-left:3px solid var(--forest2);padding:2px 0 3px 13px;margin:15px 0}
+    iframe.brownfield{width:100%;height:calc(100vh - 245px);min-height:560px;border:1px solid var(--line);border-radius:14px;background:#e7efe8}
+    .footer-note{font-size:11px;color:var(--muted);margin-top:15px}
+    .toast{position:fixed;z-index:2000;left:50%;bottom:25px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#173d2c;color:#fff;border-radius:10px;padding:12px 16px;box-shadow:0 8px 28px #001a0d38;transition:.2s}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    .empty{padding:18px;border:1px dashed #bfd0c1;border-radius:12px;color:#66776b;background:#f9fbf8;font-size:13px}
+    @media(max-width:980px){.shell{grid-template-columns:78px minmax(0,1fr)}aside.sidebar{padding:18px 10px}.brand{justify-content:center;padding:0 0 12px}.brand-copy,.nav-label,.nav-text,.side-note{display:none}.nav button{justify-content:center;padding:12px 8px}.nav .icon{font-size:19px}.map-layout{grid-template-columns:320px minmax(0,1fr)}main{padding:18px}.topbar{align-items:flex-start}.pill.hide-tablet{display:none}}
+    @media(max-width:720px){.shell{display:block;padding-bottom:68px}aside.sidebar{position:fixed;z-index:1000;bottom:0;left:0;right:0;height:64px;padding:6px 9px;display:block}.brand,.nav-label,.side-note{display:none}.nav{display:flex;justify-content:space-around;gap:2px}.nav button{display:grid;gap:0;justify-items:center;padding:5px 4px;min-width:52px;font-size:9px}.nav .icon{font-size:18px}.nav-text{display:block!important}.sidebar .brand-copy{display:none}main{padding:16px 12px 22px}.topbar{margin-bottom:14px}.top-actions{gap:5px}.pill{padding:7px 9px;font-size:10px}.map-layout{display:flex;flex-direction:column;min-height:0}.controls{border-right:0;border-bottom:1px solid var(--line);max-height:none;overflow:visible;padding:15px}.map-stage,#mapCanvas{min-height:54vh}.map-stage{order:-1}.map-badge{top:9px;right:9px}.map-legend{bottom:9px;right:9px}.grid2,.check-grid{grid-template-columns:1fr}.section-head{display:block}.section-head .btn{margin-top:12px}.iframe.brownfield{height:72vh;min-height:460px}iframe.brownfield{height:72vh;min-height:460px}.notice{font-size:11px}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">PW</div><div class="brand-copy"><strong>PlanningWatch UK</strong><span>Holding the Green Line</span></div></div>
+    <div><div class="nav-label">Workspace</div><nav class="nav" aria-label="Main navigation">
+      <button class="active" data-view="mapView" title="Map"><span class="icon">⌖</span><span class="nav-text">Map</span></button>
+      <button data-view="brownfieldView" title="Brownfield map"><span class="icon">▧</span><span class="nav-text">Brownfield</span></button>
+      <button data-view="alertsView" title="My alerts"><span class="icon">◉</span><span class="nav-text">My alerts</span></button>
+      <button data-view="uploadView" title="Upload evidence"><span class="icon">↑</span><span class="nav-text">Upload</span></button>
+      <button data-view="bookView" title="Book updates"><span class="icon">▤</span><span class="nav-text">Book updates</span></button>
+      <button data-view="coverageView" title="Coverage and sources"><span class="icon">◎</span><span class="nav-text">Coverage</span></button>
+    </nav></div>
+    <div class="side-note"><b>Evidence first.</b>Check the source, date and council record before acting on any map entry.</div>
+  </aside>
+  <main>
+    <header class="topbar">
+      <div><div class="eyebrow">Community planning intelligence</div><h1 id="pageTitle">Map around you</h1></div>
+      <div class="top-actions"><div class="pill hide-tablet" id="homePill">Home point: <strong>not set</strong></div><button class="btn" id="topSetHome">Set home point</button></div>
+    </header>
+
+    <section class="view active" id="mapView">
+      <div class="notice"><b>Prototype data:</b> Housing examples on this screen are demonstrations, not live planning records. Live council planning, renewable-energy and NRCA feeds still need connecting.</div>
+      <div class="map-layout">
+        <section class="controls" aria-label="Map controls">
+          <h2>Find changes near you</h2><div class="tiny">Set a postcode home point, then choose what to watch.</div>
+          <div class="row"><div class="field"><label for="postcode">Home postcode</label><input id="postcode" placeholder="e.g. KT14 7AA" autocomplete="postal-code"></div><button class="btn" id="saveHome">Set centre</button></div>
+          <div class="field"><label for="radius">Search radius</label><select id="radius"><option value="1">1 mile</option><option value="2">2 miles</option><option value="5" selected>5 miles</option><option value="10">10 miles</option><option value="20">20 miles</option></select></div>
+          <div class="field"><label for="search">Search map records</label><input id="search" placeholder="Site, place or reference"></div>
+          <div class="filters" aria-label="Map layers">
+            <button class="filter active" data-layer="all">All</button><button class="filter" data-layer="housing">Housing</button><button class="filter" data-layer="solar">Solar</button><button class="filter" data-layer="wind">Wind</button><button class="filter" data-layer="nrca">NRCA</button>
+          </div>
+          <div class="record-list" id="recordList"></div>
+          <div class="footer-note">Map tiles © OpenStreetMap contributors. Confirm each site against the current council register.</div>
+        </section>
+        <div class="map-stage"><div id="mapCanvas" role="application" aria-label="Interactive UK planning map"></div><div class="map-badge" id="mapBadge">UK map · demonstration records</div>
+          <div class="map-legend"><span><i class="dot" style="background:#b58900"></i>Planning</span><span><i class="dot" style="background:#3178ac"></i>Construction</span><span><i class="dot" style="background:#328252"></i>Approved</span><span><i class="dot" style="background:#5e6e63"></i>Home point</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="brownfieldView">
+      <div class="section-head"><div><div class="eyebrow">Previously developed land</div><h2>England brownfield register map</h2><p>Search the detailed register map by site, postcode/address, local authority, ward or reference.</p></div></div>
+      <div class="callout"><b>How to use it:</b> Register coverage, site boundaries and update dates vary by authority. A map point is not a legal boundary. Check the current council register before relying on a record. Snapshot: 28 September 2026.</div>
+      <iframe class="brownfield" title="Detailed England brownfield register map" src="./brownfield-map.html"></iframe>
+      <p class="footer-note">The brownfield map is bundled with this prototype and opens from the Brownfield tab.</p>
+    </section>
+
+    <section class="view" id="alertsView">
+      <div class="section-head"><div><div class="eyebrow">Personal watch area</div><h2>My alerts</h2><p>Choose the changes you want to follow around your home point.</p></div></div>
+      <div class="grid2">
+        <section class="panel"><h3>1 · Set your centre point</h3><p class="muted">Enter a postcode. The app will look up its location and use it as the centre of your watch area.</p>
+          <div class="row"><div class="field"><label for="postcodeAlerts">Home postcode</label><input id="postcodeAlerts" placeholder="e.g. KT14 7AA" autocomplete="postal-code"></div><button class="btn" id="saveHomeAlerts">Set centre</button></div>
+          <div class="field"><label for="radiusAlerts">Alert distance</label><select id="radiusAlerts"><option value="1">1 mile</option><option value="2">2 miles</option><option value="5">5 miles</option><option value="10">10 miles</option><option value="20">20 miles</option></select></div>
+          <div class="status-box" id="homeStatus">No home point saved on this device.</div>
+        </section>
+        <section class="panel"><h3>2 · Pick what to watch</h3><div class="check-grid">
+          <label class="check"><input type="checkbox" value="new-applications" checked><span>New planning applications</span></label>
+          <label class="check"><input type="checkbox" value="status-changes" checked><span>Application status changes</span></label>
+          <label class="check"><input type="checkbox" value="solar"><span>Planned solar farms</span></label>
+          <label class="check"><input type="checkbox" value="wind"><span>Planned wind farms</span></label>
+          <label class="check"><input type="checkbox" value="brownfield"><span>Brownfield register changes</span></label>
+          <label class="check"><input type="checkbox" value="nrca"><span>NRCA / resident notices</span></label>
+        </div>
+          <div class="field"><label for="delivery">Alert frequency (when live alerts are connected)</label><select id="delivery"><option value="daily">Daily summary</option><option value="weekly">Weekly summary</option><option value="immediate">As changes are detected</option></select></div>
+          <button class="btn" id="saveAlerts">Save alert settings</button>
+        </section>
+      </div>
+      <div class="callout"><b>About NRCA notices:</b> These are resident or campaign-group updates. They are not the council’s statutory planning notices, formal representations, or planning decisions.</div>
+      <div class="notice">Your postcode and alert preferences are saved only in this browser in this prototype. Automatic monitoring and email/push delivery need a live data service and account system before launch.</div>
+    </section>
+
+    <section class="view" id="uploadView">
+      <div class="section-head"><div><div class="eyebrow">Book companion</div><h2>Upload a planning document</h2><p>Use this page to share a notice, planning document or photograph with the project.</p></div></div>
+      <div class="panel">
+        <div class="upload-box"><h3>Choose files from your phone or computer</h3><p class="muted">PDFs, Word documents and photographs are accepted in the finished app.</p><input id="uploadFiles" type="file" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic"></div>
+        <div class="grid2"><div class="field"><label for="uploadPostcode">Area postcode (optional)</label><input id="uploadPostcode" placeholder="e.g. KT14 7AA"></div><div class="field"><label for="uploadType">What are you uploading?</label><select id="uploadType"><option>Planning notice</option><option>Planning application document</option><option>NRCA / community notice</option><option>Brownfield information</option><option>Other evidence</option></select></div></div>
+        <div class="field"><label for="uploadNote">Short note</label><textarea id="uploadNote" placeholder="Tell us what the document relates to. Please avoid adding private personal information."></textarea></div>
+        <div class="file-list" id="fileList"></div><button class="btn" id="sendUpload" style="margin-top:14px">Submit upload</button>
+        <div class="callout"><b>Prototype:</b> Files are not sent or stored. The upload service and privacy controls will be connected before this page is used publicly. For now, selecting files only shows their names on your screen.</div>
+      </div>
+    </section>
+
+    <section class="view" id="bookView">
+      <div class="section-head"><div><div class="eyebrow">Holding the Green Line</div><h2>Book updates & resources</h2><p>Updates and corrections for readers, alongside the app’s practical evidence tools.</p></div></div>
+      <div class="grid2">
+        <section class="panel"><h3>Book update notices</h3><div class="update-item"><b>Companion page ready for updates</b><div class="tiny">This list will carry corrections, policy changes and additions to future editions.</div></div><div class="status-box">No online update feed is connected yet. This page is ready for the permanent QR link printed in the book.</div></section>
+        <section class="panel"><h3>Use the book with the app</h3><p class="muted">Find a site on the map, check its council record, save relevant documents and use the book’s evidence checklists to organise your questions.</p><div class="callout">A map entry is a starting point for checking evidence. It is not a planning decision or legal advice.</div><button class="btn secondary" data-go="mapView">Open the map</button></section>
+      </div>
+      <section class="panel"><h3>Official sources and community updates</h3><p class="muted">Future source connections will identify the publisher, date and official record for every item. NRCA and other community notices will be labelled separately from statutory planning information.</p></section>
+    </section>
+    <section class="view" id="coverageView">
+      <div class="section-head"><div><div class="eyebrow">Four planning systems · one watch area</div><h2>UK coverage & official sources</h2><p>PlanningWatch is being designed for England, Scotland, Wales and Northern Ireland. Each nation needs its own source connections and coverage checks.</p></div></div>
+      <div class="notice"><b>No single UK-wide planning feed is being assumed.</b> This prototype is not connected to live official sources yet. It will show a coverage state for each council and dataset so users can see where information is current, partial or unavailable.</div>
+      <div class="grid2">
+        <section class="panel"><h3>England</h3><span class="badge">PLANNED SOURCE ROUTE</span><p>Planning Data API for national planning datasets, with direct local-authority registers where application coverage or detail is incomplete. National planning policy and legislation will be checked separately.</p><p class="tiny">The API is in beta. Records need to show source, last checked date and any known gaps.</p><a href="https://www.planning.data.gov.uk/docs" target="_blank" rel="noopener">Planning Data API documentation ↗</a></section>
+        <section class="panel"><h3>Scotland</h3><span class="badge">PLANNED SOURCE ROUTE</span><p>Scottish Government planning policy, ePlanning Scotland, and the public application registers maintained by planning authorities.</p><p class="tiny">Applications and decisions will be linked back to the relevant council register.</p><a href="https://www.gov.scot/policies/planning-architecture/development-management/" target="_blank" rel="noopener">Scottish Government: development management ↗</a></section>
+        <section class="panel"><h3>Wales</h3><span class="badge">PLANNED SOURCE ROUTE</span><p>Welsh Government planning policy, local-authority public registers, and Planning and Environment Decisions Wales for relevant national casework and appeals.</p><p class="tiny">The local planning authority remains the source for its application register and decision.</p><a href="https://www.gov.wales/find-your-local-planning-authority" target="_blank" rel="noopener">Find a Welsh local planning authority ↗</a></section>
+        <section class="panel"><h3>Northern Ireland</h3><span class="badge">PLANNED SOURCE ROUTE</span><p>Northern Ireland Planning Portal public register, Department for Infrastructure planning policy, and council source links.</p><p class="tiny">Coverage is not complete online: the full official register is not available through the public portal, and Mid Ulster uses a separate system.</p><a href="https://www.nidirect.gov.uk/services/planning-portal" target="_blank" rel="noopener">Northern Ireland Planning Portal information ↗</a><br><a href="https://www.infrastructure-ni.gov.uk/topics/planning" target="_blank" rel="noopener">Department for Infrastructure planning ↗</a></section>
+      </div>
+      <div class="panel"><h3>Government law and planning policy</h3><p>National legislation will be tracked separately from local planning records. Proposed connections include new-legislation feeds and the relevant planning-policy pages for each nation. Any alert will link to the official text and show its publication or update date.</p><a href="https://www.legislation.gov.uk/new" target="_blank" rel="noopener">Legislation.gov.uk: new legislation ↗</a></div>
+      <div class="panel"><h3>Coverage labels readers will see</h3><div class="grid2">
+        <div class="status-box"><b>Connected</b><br>Automated source checked on a stated schedule.</div>
+        <div class="status-box"><b>Partial</b><br>Some records, time periods, documents or boundaries may be missing.</div>
+        <div class="status-box"><b>Official link only</b><br>Open the authority's register to check current details.</div>
+        <div class="status-box"><b>Unavailable</b><br>The source could not be checked; no completeness is implied.</div>
+      </div><div class="callout">Every result will carry its nation, authority, original source link, source date and last-checked date. National law and policy changes will be tracked separately from postcode-based local alerts.</div></div>
+      <div class="footer-note">Official source routes checked for this prototype on 28 September 2026. A planned route does not mean a live integration is already running.</div>
+    </section>
+    <div class="footer-note">PlanningWatch UK · Companion prototype for <i>Holding the Green Line</i> · Source dates and limitations should be checked on each record.</div>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const records=[
+  {id:1,name:"West Hall — residential development",place:"West Byfleet / Woking",homes:500,status:"Planning",lat:51.3282,lng:-0.5042,ref:"DEMO-PLAN-001",green:true,kind:"housing",desc:"Demonstration record only. Verify current details with Woking Borough Council."},
+  {id:2,name:"Woking town-centre redevelopment",place:"Woking",homes:900,status:"Construction",lat:51.3190,lng:-0.5580,ref:"DEMO-PLAN-002",green:false,kind:"housing",desc:"Demonstration record only. Not a live planning feed."},
+  {id:3,name:"Horsell residential scheme",place:"Horsell",homes:180,status:"Approved",lat:51.3240,lng:-0.5880,ref:"DEMO-PLAN-003",green:false,kind:"housing",desc:"Demonstration record only. Check the current council register."},
+  {id:4,name:"Byfleet development site",place:"Byfleet",homes:720,status:"Planning",lat:51.3375,lng:-0.4735,ref:"DEMO-PLAN-004",green:true,kind:"housing",desc:"Demonstration record only. Check the current council register."}
+];
+let selectedLayer="all",map=null,markers=[],homeCircle=null,homeMarker=null,homePoint=null;
+const titles={mapView:"Map around you",brownfieldView:"Brownfield register map",alertsView:"My alerts",uploadView:"Upload a planning document",bookView:"Book updates",coverageView:"UK coverage & official sources"};
+function esc(s){return String(s).replace(/[&<>\"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];});}
+function notify(message){const t=document.getElementById("toast");t.textContent=message;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2600);}
+function showView(id){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===id));document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===id));document.getElementById("pageTitle").textContent=titles[id]||"PlanningWatch UK";if(id==="mapView"&&map)setTimeout(()=>map.invalidateSize(),120);if(id==="brownfieldView"){const f=document.querySelector("iframe.brownfield");if(f&&f.contentWindow)f.contentWindow.dispatchEvent(new Event("resize"));}location.hash=id==="uploadView"?"upload":id==="bookView"?"updates":id==="brownfieldView"?"brownfield":id==="alertsView"?"alerts":id==="coverageView"?"coverage":"map";}
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.go)));
+function loadHome(){try{const h=JSON.parse(localStorage.getItem("pw-home-point")||"null");if(h&&Number.isFinite(h.lat)&&Number.isFinite(h.lng)){homePoint=h;document.getElementById("postcode").value=h.postcode||"";document.getElementById("postcodeAlerts").value=h.postcode||"";document.getElementById("homePill").innerHTML="Home point: <strong>"+esc(h.postcode||"saved")+"</strong>";document.getElementById("homeStatus").textContent="Centre: "+(h.postcode||"saved location")+" · "+(h.radius||5)+" mile radius";document.getElementById("radius").value=String(h.radius||5);document.getElementById("radiusAlerts").value=String(h.radius||5);if(map)drawHome();}}catch(e){}}
+function drawHome(){if(!map||!homePoint)return;if(homeCircle)map.removeLayer(homeCircle);if(homeMarker)map.removeLayer(homeMarker);const miles=Number(document.getElementById("radius").value||homePoint.radius||5);homeMarker=L.circleMarker([homePoint.lat,homePoint.lng],{radius:8,color:"#273d34",weight:3,fillColor:"#fff",fillOpacity:1}).addTo(map).bindPopup("<b>Your home point</b><br>"+esc(homePoint.postcode||"Saved location"));homeCircle=L.circle([homePoint.lat,homePoint.lng],{radius:miles*1609.344,color:"#426e52",weight:2,dashArray:"6 5",fillColor:"#85aa76",fillOpacity:.12}).addTo(map);document.getElementById("mapBadge").textContent=(homePoint.postcode||"Home point")+" · "+miles+" mile watch area";}
+function initMap(){if(!window.L){document.getElementById("mapCanvas").innerHTML='<div class="empty" style="margin:24px">The map library could not load. Check your internet connection and reload.</div>';return;}map=L.map("mapCanvas",{zoomControl:true}).setView([53.0,-1.7],6);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map);renderRecords();loadHome();}
+function filteredRecords(){const q=(document.getElementById("search").value||"").trim().toLowerCase();return records.filter(d=>(selectedLayer==="all"||selectedLayer===d.kind)&&(!q||(d.name+" "+d.place+" "+d.ref).toLowerCase().includes(q)));}
+function renderRecords(){if(!map)return;markers.forEach(m=>map.removeLayer(m));markers=[];const data=filteredRecords();const list=document.getElementById("recordList");if(selectedLayer==="solar"||selectedLayer==="wind"||selectedLayer==="nrca"){const name=selectedLayer==="solar"?"planned solar farms":selectedLayer==="wind"?"planned wind farms":"NRCA / resident notices";list.innerHTML='<div class="empty"><b>No verified '+name+' feed is connected yet.</b><br>This layer is prepared for official or clearly attributed records. No live projects are being represented here.</div>';return;}if(!data.length){list.innerHTML='<div class="empty">No matching demonstration records.</div>';return;}list.innerHTML=data.map(d=>'<article class="record" data-record="'+d.id+'"><div class="record-title">'+esc(d.name)+'</div><span class="badge demo">DEMO ONLY</span><span class="badge '+d.status.toLowerCase()+'">'+esc(d.status)+'</span><div class="record-meta"><b>'+d.homes.toLocaleString()+'</b> homes · '+esc(d.place)+'<br>Ref: '+esc(d.ref)+(d.green?' · Green Belt flag in demo data':'')+'</div></article>').join("");list.querySelectorAll("[data-record]").forEach(el=>el.addEventListener("click",()=>focusRecord(Number(el.dataset.record))));data.forEach(d=>{const color=d.status==="Planning"?"#b58900":d.status==="Construction"?"#3178ac":"#328252";const marker=L.circleMarker([d.lat,d.lng],{radius:8,color:"#fff",weight:2,fillColor:color,fillOpacity:1}).addTo(map);marker.bindPopup("<b>"+esc(d.name)+"</b><br><span>DEMO ONLY · "+esc(d.status)+"</span><br>"+d.homes.toLocaleString()+" homes · "+esc(d.place)+"<br><small>"+esc(d.ref)+"</small><br>"+esc(d.desc));markers.push(marker);});}
+function focusRecord(id){const d=records.find(x=>x.id===id);if(!d||!map)return;map.setView([d.lat,d.lng],13);const m=markers.find(x=>{const p=x.getLatLng();return p.lat===d.lat&&p.lng===d.lng;});if(m)m.openPopup();}
+document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.toggle("active",x===b));selectedLayer=b.dataset.layer;renderRecords();}));
+document.getElementById("search").addEventListener("input",renderRecords);
+async function setHomeFrom(inputId){const input=document.getElementById(inputId),postcode=(input.value||"").trim().toUpperCase();if(!postcode){notify("Enter a postcode first.");input.focus();return;}const btn=inputId==="postcodeAlerts"?document.getElementById("saveHomeAlerts"):document.getElementById("saveHome");btn.disabled=true;btn.textContent="Looking up…";try{const response=await fetch("https://api.postcodes.io/postcodes/"+encodeURIComponent(postcode));if(!response.ok)throw new Error("Lookup failed");const json=await response.json();if(json.status!==200||!json.result)throw new Error("Postcode not found");const r=json.result,rad=Number(document.getElementById(inputId==="postcodeAlerts"?"radiusAlerts":"radius").value||5);homePoint={postcode:r.postcode,lat:r.latitude,lng:r.longitude,radius:rad};localStorage.setItem("pw-home-point",JSON.stringify(homePoint));document.getElementById("postcode").value=r.postcode;document.getElementById("postcodeAlerts").value=r.postcode;document.getElementById("homePill").innerHTML="Home point: <strong>"+esc(r.postcode)+"</strong>";document.getElementById("homeStatus").textContent="Centre: "+r.postcode+" · "+rad+" mile radius";if(map){map.setView([r.latitude,r.longitude],12);drawHome();}notify("Home point saved on this device.");}catch(e){notify("We couldn't find that postcode. Check it and try again.");}finally{btn.disabled=false;btn.textContent="Set centre";}}
+document.getElementById("saveHome").addEventListener("click",()=>setHomeFrom("postcode"));document.getElementById("saveHomeAlerts").addEventListener("click",()=>setHomeFrom("postcodeAlerts"));document.getElementById("topSetHome").addEventListener("click",()=>{showView("alertsView");document.getElementById("postcodeAlerts").focus();});
+document.getElementById("radius").addEventListener("change",()=>{if(homePoint){homePoint.radius=Number(document.getElementById("radius").value);localStorage.setItem("pw-home-point",JSON.stringify(homePoint));drawHome();}});
+document.getElementById("radiusAlerts").addEventListener("change",()=>{if(homePoint){homePoint.radius=Number(document.getElementById("radiusAlerts").value);localStorage.setItem("pw-home-point",JSON.stringify(homePoint));document.getElementById("homeStatus").textContent="Centre: "+homePoint.postcode+" · "+homePoint.radius+" mile radius";drawHome();}});
+document.getElementById("saveAlerts").addEventListener("click",()=>{const types=Array.from(document.querySelectorAll("#alertsView input[type=checkbox]:checked")).map(x=>x.value);const settings={types:types,frequency:document.getElementById("delivery").value,radius:document.getElementById("radiusAlerts").value};localStorage.setItem("pw-alert-preferences",JSON.stringify(settings));notify("Alert preferences saved on this device.");});
+document.getElementById("uploadFiles").addEventListener("change",function(){const files=Array.from(this.files||[]);document.getElementById("fileList").innerHTML=files.length?files.map(f=>'<div>📄 '+esc(f.name)+' <span class="tiny">('+Math.max(1,Math.round(f.size/1024))+' KB)</span></div>').join(""):"";});
+document.getElementById("sendUpload").addEventListener("click",()=>notify("Upload service is not connected yet. Your files have not been sent."));
+if(location.hash==="#upload")showView("uploadView");else if(location.hash==="#updates")showView("bookView");else if(location.hash==="#brownfield")showView("brownfieldView");else if(location.hash==="#alerts")showView("alertsView");else if(location.hash==="#coverage")showView("coverageView");
+initMap();
+if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});
+</script>
+</body>
+</html>

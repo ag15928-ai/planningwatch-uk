@@ -1,0 +1,10 @@
+{
+  "name": "PlanningWatch UK — Holding the Green Line",
+  "short_name": "PlanningWatch",
+  "description": "Community planning intelligence and book companion.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f2",
+  "theme_color": "#163d2c"
+}
