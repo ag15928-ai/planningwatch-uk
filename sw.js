@@ -1,4 +1,4 @@
-const CACHE_NAME = "planningwatch-shell-v1";
+const CACHE_NAME = "planningwatch-shell-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest"];
 
 self.addEventListener("install", event => {
@@ -19,6 +19,7 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET" || new URL(request.url).origin !== self.location.origin) return;
+  if (new URL(request.url).pathname.endsWith("/data/renewables.json")) return;
   event.respondWith(
     fetch(request).then(response => {
       const copy = response.clone();

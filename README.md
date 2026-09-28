@@ -10,8 +10,10 @@ The folder is self-contained. Keep index.html, manifest.webmanifest, sw.js, and 
 
 ## What is in this prototype
 
-- Interactive OpenStreetMap map with the existing four PlanningWatch demonstration records.
+- Interactive OpenStreetMap map with the existing four clearly labelled PlanningWatch demonstration housing records.
+- Solar and wind project layers from the Department for Energy Security and Net Zero (DESNZ) Renewable Energy Planning Database (REPD), covering the UK and refreshed by GitHub Actions every Monday when the official quarterly source changes.
 - Postcode lookup and saved home-centre point using postcodes.io. The selected radius is drawn on the map.
+- Local browser change checks for REPD solar/wind records near the saved home point. Changes are compared when the user opens the app; browser notifications require permission.
 - Alert preferences for housing applications, status changes, proposed solar and wind farms, brownfield-register changes, and NRCA/community notices. Preferences are saved in this browser only.
 - Detailed England brownfield-register map bundled as a separate page and opened inside the Brownfield tab.
 - UK coverage page for England, Scotland, Wales and Northern Ireland, with official source routes and planned coverage labels.
@@ -20,7 +22,11 @@ The folder is self-contained. Keep index.html, manifest.webmanifest, sw.js, and 
 
 ## Not live yet
 
-The four housing records are explicitly labelled demonstrations. Solar, wind and NRCA layers are ready in the interface but have no live feed connected. Alerts do not yet monitor changes or send email/push notifications. File uploads are not transmitted. These require a trusted server, data integrations, accounts, and privacy controls.
+The four housing records remain explicitly labelled demonstrations. Solar and wind projects use the official UK REPD quarterly snapshot (projects represented from 150 kW) and exclude operational, refused, withdrawn, abandoned and expired schemes from the map. The feed is a snapshot, not a live council application register; small projects or newly submitted schemes can be missing.
+
+Browser alerts compare the user's saved local snapshot with the latest published REPD data when the app is opened. They do not check in the background when the app is closed and do not send email or remote push notifications. Postcode and alert preferences remain on that device. NRCA/community notices, local planning applications, legislation updates and file uploads are not connected to live services yet. A verified source for NRCA notices and a secure backend are required before public submissions or background delivery.
+
+GitHub Actions runs `scripts/update_renewables.py` on a weekly schedule and when the workflow/source updater changes. It reads the latest CSV attachment from DESNZ's official publication page, converts British National Grid coordinates to WGS84, and commits `data/renewables.json` only when the source-derived data changes. The GitHub Actions run must complete successfully before the JSON feed is available to GitHub Pages.
 
 ## UK-wide data coverage
 
@@ -31,7 +37,7 @@ There is no single national planning feed in this prototype. The coverage page s
 - Wales: Welsh Government policy, local-authority registers and Planning and Environment Decisions Wales for relevant casework.
 - Northern Ireland: the Planning Portal public register, Department for Infrastructure sources and council links. The public NI portal does not expose the full official register online; Mid Ulster uses a separate system.
 
-These are planned routes, not live connections. The app should show a source and last-checked date and label every area as Connected, Partial, Official link only or Unavailable. It must not present missing records as proof that nothing is planned.
+The REPD renewable-project route is connected for a quarterly UK snapshot. Other routes are not live connections. The national Planning Data API documents the planning-application dataset as incomplete, and local-authority coverage varies. The app must not present missing records as proof that nothing is planned.
 
 The brownfield map is a source-led snapshot labelled 28 September 2026. Its own screen explains that coverage, update dates, and point accuracy vary by authority. Confirm records and boundaries with the current local-authority register.
 
