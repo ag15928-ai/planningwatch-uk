@@ -1,0 +1,6 @@
+[functions.register-watch]
+verify_jwt = true
+
+[functions.check-renewables]
+# The scheduled caller authenticates with a separate CRON_SECRET checked in code.
+verify_jwt = false
