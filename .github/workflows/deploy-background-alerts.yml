@@ -1,0 +1,35 @@
+name: Deploy background alert functions
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/functions/**"
+      - "supabase/config.toml"
+      - ".github/workflows/deploy-background-alerts.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Deploy user registration function
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo "Add SUPABASE_ACCESS_TOKEN repository secret"; exit 1; }
+          test -n "$SUPABASE_PROJECT_REF" || { echo "Add SUPABASE_PROJECT_REF repository secret"; exit 1; }
+          supabase functions deploy register-watch --project-ref "$SUPABASE_PROJECT_REF"
+      - name: Deploy scheduled checker
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy check-renewables --project-ref "$SUPABASE_PROJECT_REF" --no-verify-jwt

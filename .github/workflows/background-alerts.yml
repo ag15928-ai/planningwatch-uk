@@ -1,0 +1,30 @@
+name: Check background renewable alerts
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "35 6 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: background-renewable-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run secure background check
+        env:
+          ALERT_CHECK_URL: ${{ secrets.PW_ALERT_CHECK_URL }}
+          ALERT_CRON_SECRET: ${{ secrets.PW_ALERT_CRON_SECRET }}
+        run: |
+          test -n "$ALERT_CHECK_URL" || { echo "Missing PW_ALERT_CHECK_URL repository secret"; exit 1; }
+          test -n "$ALERT_CRON_SECRET" || { echo "Missing PW_ALERT_CRON_SECRET repository secret"; exit 1; }
+          curl --fail-with-body --silent --show-error \
+            --request POST "$ALERT_CHECK_URL" \
+            --header "Authorization: Bearer $ALERT_CRON_SECRET" \
+            --header "Content-Type: application/json" \
+            --data '{}'
